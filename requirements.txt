@@ -1,5 +1,5 @@
 # Editable packages
--e ./pythonpackages/azure-playground
+-e ./pythonpackages/azure_playground
 
 pydantic
 requests
@@ -8,6 +8,7 @@ nbstripout
 pre-commit
 joblib
 opencv-python
+yt-dlp
 tqdm
 pillow
 spacy
