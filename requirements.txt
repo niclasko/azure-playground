@@ -1,0 +1,19 @@
+# Editable packages
+-e ./pythonpackages/azure-playground
+
+pydantic
+requests
+python-dotenv
+nbstripout
+pre-commit
+joblib
+opencv-python
+tqdm
+pillow
+spacy
+pytest
+ffmpeg-python
+black
+aiohttp
+matplotlib
+numpy

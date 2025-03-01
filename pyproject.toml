@@ -1,0 +1,3 @@
+[tool.black]
+line-length = 100  # Change max line length
+target-version = ['py311']  # Change target Python version
