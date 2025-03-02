@@ -58,7 +58,6 @@ class VideoFrameSampler:
             file.unlink()
 
     def _capture(self, samples: int) -> Iterator[Frame]:
-        self.captured = 0
         video: cv2.VideoCapture = cv2.VideoCapture(str(self.input))
         if not video.isOpened():
             self.logger.error(f"Could not open video file: {self.input}")
@@ -67,25 +66,18 @@ class VideoFrameSampler:
         frames: int = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
         fps: float = video.get(cv2.CAP_PROP_FPS)
         seconds: float = frames / fps
-        offsets: List[float] = [i / samples * seconds for i in range(1, samples + 1)]
 
         self.logger.info(f"Video '{self.input.name}' has {frames} frames at {fps} FPS.")
 
-        for offset in tqdm.tqdm(offsets, desc="Extracting frames"):
+        for sample in tqdm.tqdm(range(1, samples + 1), desc="Extracting frames"):
+            offset: float = sample / samples * seconds
             file: Path = self.output / f"{offset}.jpg"
-            if file.exists():
-                self.captured += 1
-                yield Frame(offset=offset, image=file)
-                continue
-            i: int = int(offset * fps)
-            video.set(cv2.CAP_PROP_POS_FRAMES, i)
+            index: int = int(offset * fps)
+            video.set(cv2.CAP_PROP_POS_FRAMES, index)
             ret, frame = video.read()
             if ret:
                 cv2.imwrite(str(file), frame)
                 yield Frame(offset=offset, image=file)
-                self.captured += 1
-            else:
-                self.logger.warning(f"Failed to read frame at offset {offset}")
 
         video.release()
         self.logger.info(f"Frame extraction completed. Frames saved to: {self.output}")

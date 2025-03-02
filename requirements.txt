@@ -10,11 +10,9 @@ joblib
 opencv-python
 yt-dlp
 tqdm
-pillow
-spacy
 pytest
-ffmpeg-python
 black
 aiohttp
 matplotlib
 numpy
+tenacity

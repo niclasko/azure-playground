@@ -8,6 +8,7 @@ from _hashlib import HASH
 from aiohttp import ClientSession
 from azure_playground.utils.app_data import AppData
 from pydantic import BaseModel
+from tenacity import retry, retry_if_exception_type, wait_exponential
 
 LLM_CACHE_DIR: Path = Path("llm_cache")
 
@@ -40,12 +41,19 @@ class LLM:
     async def _async_post(
         self, url: str, headers: Dict[str, Any] = {}, payload: Dict[str, Any] = {}
     ) -> Dict[str, Any]:
-        async with ClientSession() as session:
-            async with cast(ClientSession, session).post(
-                url, headers=headers, json=payload
-            ) as response:
-                response.raise_for_status()
-                return await response.json()
+        @retry(
+            retry=retry_if_exception_type(Exception),
+            wait=wait_exponential(multiplier=1, min=4, max=10),
+        )
+        async def _inner() -> Dict[str, Any]:
+            async with ClientSession() as session:
+                async with cast(ClientSession, session).post(
+                    url, headers=headers, json=payload
+                ) as response:
+                    response.raise_for_status()
+                    return await response.json()
+
+        return await _inner()
 
     def _file(self, url: str, payload: Dict[str, Any]) -> Path:
         key: HASH = hashlib.md5()
